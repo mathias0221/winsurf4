@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zonificar Excel - Enrutador</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #3f51b5;
+            font-family: Arial, sans-serif;
+            color: white;
+        }
+        .header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            max-width: 800px;
+        }
+        .back-button {
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            border: 2px solid white;
+            border-radius: 4px;
+            background-color: transparent;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+        .back-button:hover {
+            background-color: white;
+            color: #3f51b5;
+        }
+        h1 {
+            color: white;
+            font-size: 2rem;
+            margin: 0;
+            text-align: center;
+            flex-grow: 1;
+        }
+        .main-container {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            width: 100%;
+        }
+        .action-button {
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            border: 2px solid white;
+            border-radius: 4px;
+            background-color: transparent;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+        .action-button:hover {
+            background-color: white;
+            color: #3f51b5;
+        }
+        .file-input {
+            display: none;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .data-table th,
+        .data-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        .data-table th {
+            background-color: rgba(255, 255, 255, 0.2);
+            font-weight: bold;
+        }
+        .data-table tr:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .no-data {
+            text-align: center;
+            padding: 2rem;
+            color: rgba(255, 255, 255, 0.7);
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+        .list-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .list-checkbox {
+            margin-right: 0.5rem;
+        }
+        .saved-list-card {
+            background: rgba(30,40,70,0.8);
+            border-radius: 12px;
+            margin-bottom: 1.2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+            padding: 1rem;
+        }
+        .saved-list-header {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 1.1rem;
+            color: white;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        .saved-list-header:hover {
+            text-decoration: underline;
+        }
+        .saved-list-icon {
+            margin-right: 0.7rem;
+            color: #90caf9;
+            font-size: 1.4rem;
+        }
+        .saved-list-count {
+            color: #b0bec5;
+            font-size: 0.95rem;
+            margin-left: 0.7rem;
+        }
+        .saved-list-table {
+            margin-top: 0.7rem;
+            display: none;
+        }
+        .delete-list-btn {
+            background: transparent;
+            border: none;
+            color: #ef5350;
+            margin-left: auto;
+            font-size: 1.3rem;
+            cursor: pointer;
+        }
+        #qrSection {
+            display: none;
+            width: 100%;
+            max-width: 800px;
+            margin: auto;
+        }
+        #qrSection .back-button {
+            margin: 20px 0 10px 0;
+        }
+        #qrSection h2 {
+            color: white;
+            text-align: center;
+        }
+        #qrSection .video-container {
+            background: #222;
+            border-radius: 8px;
+        }
+        #qrSection video {
+            width: 100%;
+            border-radius: 8px;
+        }
+        #qrSection canvas {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+        }
+        #qrSection .controls {
+            margin-top: 10px;
+        }
+        #qrSection button {
+            margin: 5px;
+        }
+        #qrSection #resultadoQR {
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            font-size: 18px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #222;
+        }
+        #qrSection #zonaQR {
+            margin-top: 10px;
+            padding: 10px;
+            background: #3f51b5;
+            border-radius: 8px;
+            color: white;
+            font-size: 20px;
+            display: none;
+        }
+        #qrSection .mensaje-error {
+            display: none;
+            color: red;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        /* Estilos para la barra de progreso */
+        .progress-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            z-index: 1000;
+            display: none;
+        }
+        .progress-bar {
+            width: 300px;
+            height: 20px;
+            background-color: #1a237e;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: #90caf9;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .progress-text {
+            color: white;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+</head>
+<body>
+    <div class="header">
+        <button class="back-button" onclick="goBack()">Volver</button>
+        <h1>Zonificar Excel</h1>
+    </div>
+    <div class="main-container">
+        <div class="action-buttons">
+            <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls" onchange="handleFileSelect(event)">
+            <button class="action-button" onclick="document.getElementById('fileInput').click()">
+                Seleccionar Excel
+            </button>
+            <button class="action-button" onclick="deleteSelectedLists()">
+                Eliminar Lista
+            </button>
+        </div>
+        <div id="dataContainer"></div>
+        <div id="savedListsContainer"></div>
+    </div>
+    <div class="progress-container" id="progressContainer">
+        <div class="progress-text">Zonificando documento...</div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text" id="progressText">0%</div>
+    </div>
+    <script>
+        let excelData = [];
+        let processedData = [];
+        let originalFile = null;
+        let savedLists = [];
+        
+        function goBack() {
+            window.location.href = 'index.html';
+        }
+        
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            originalFile = file;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    excelData = XLSX.utils.sheet_to_json(firstSheet);
+                    processExcelData();
+                    saveCurrentList();
+                    displayProcessedData();
+                    displaySavedLists();
+                } catch (error) {
+                    alert('Error al procesar el archivo Excel.');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+        function loadRoutes() {
+            const routesJson = localStorage.getItem('routes');
+            return routesJson ? JSON.parse(routesJson) : [];
+        }
+        async function processExcelData() {
+            const routes = loadRoutes();
+            if (!routes || !excelData || excelData.length === 0) return;
+
+            // Mostrar barra de progreso
+            const progressContainer = document.getElementById('progressContainer');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            progressContainer.style.display = 'block';
+
+            processedData = [];
+            const totalItems = excelData.length;
+
+            // Función para normalizar texto
+            const normalizeText = (text) => text.toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '');
+
+            // Función para obtener palabras de un texto
+            const getWords = (text) => normalizeText(text)
+                .split(/[\s,\.]+/)
+                .filter(word => word.length > 0);
+
+            // Procesar cada registro
+            for (let i = 0; i < excelData.length; i++) {
+                const row = excelData[i];
+                const codigo = row.Receipt ? String(row.Receipt).trim() : '';
+                let nombre = '';
+                let zona = 'sin zona';
+                let razonZona = '';
+
+                if (row.Consignee) {
+                    const lines = String(row.Consignee).split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+                    
+                    if (lines.length > 0) {
+                        // Extraer nombre
+                        const firstLine = lines[0];
+                        const bracketIndex = firstLine.indexOf('[');
+                        nombre = bracketIndex !== -1 ? firstLine.substring(0, bracketIndex).trim() : firstLine.trim();
+                        
+                        // Obtener texto completo y sus palabras
+                        const textoCompleto = lines.join(' ');
+                        const palabrasTexto = getWords(textoCompleto);
+                        
+                        console.log('Procesando:', nombre);
+                        console.log('Texto completo:', textoCompleto);
+                        console.log('Palabras en texto:', palabrasTexto);
+
+                        let zonaAsignada = false;
+
+                        // PASO 1: Buscar PRIMERO en la carpeta "otros"
+                        for (const route of routes) {
+                            if (route && route.name && route.name.toLowerCase() === 'otros' && route.content) {
+                                const palabrasOtros = route.content.split(',')
+                                    .map(p => p.trim())
+                                    .filter(p => p.length > 0);
+
+                                console.log('Palabras en otros:', palabrasOtros);
+
+                                // Buscar cada palabra de "otros" en el texto
+                                for (const palabra of palabrasOtros) {
+                                    const palabraNormalizada = normalizeText(palabra);
+                                    console.log(`Buscando palabra completa "${palabra}" (${palabraNormalizada})`);
+
+                                    // Buscar la palabra completa
+                                    if (palabrasTexto.includes(palabraNormalizada)) {
+                                        console.log('¡Encontrada palabra completa de otros!:', palabra);
+                                        zona = palabra;  // Usar la palabra exacta como zona
+                                        razonZona = `Coincidencia encontrada en otros: "${palabra}"`;
+                                        zonaAsignada = true;
+                                        break;
+                                    }
+                                }
+
+                                if (zonaAsignada) break; // Si encontró en otros, no seguir buscando
+                            }
+                        }
+
+                        // PASO 2: SOLO si no encontró nada en "otros", buscar en las demás carpetas
+                        if (!zonaAsignada) {
+                            let mejorCarpeta = {
+                                nombre: 'sin zona',
+                                coincidencias: 0,
+                                frases: []
+                            };
+
+                            // Buscar en las demás carpetas
+                            for (const route of routes) {
+                                if (route && route.name && route.name.toLowerCase() !== 'otros' && route.content) {
+                                    const frases = route.content.split(',')
+                                        .map(f => f.trim())
+                                        .filter(f => f.length > 0);
+
+                                    let coincidencias = [];
+
+                                    for (const frase of frases) {
+                                        // Convertir la frase en un conjunto de palabras
+                                        const palabrasFrase = getWords(frase);
+                                        
+                                        // Verificar si todas las palabras de la frase están en el texto
+                                        const todasLasPalabrasCoinciden = palabrasFrase.every(palabra => 
+                                            palabrasTexto.includes(palabra)
+                                        );
+
+                                        if (todasLasPalabrasCoinciden) {
+                                            coincidencias.push(frase);
+                                        }
+                                    }
+
+                                    if (coincidencias.length > mejorCarpeta.coincidencias) {
+                                        mejorCarpeta = {
+                                            nombre: route.name,
+                                            coincidencias: coincidencias.length,
+                                            frases: coincidencias
+                                        };
+                                    }
+                                }
+                            }
+
+                            // Asignar zona si encontró coincidencias
+                            if (mejorCarpeta.coincidencias > 0) {
+                                zona = mejorCarpeta.nombre;
+                                razonZona = `Se encontraron ${mejorCarpeta.coincidencias} coincidencias en ${mejorCarpeta.nombre}. Frases encontradas: "${mejorCarpeta.frases.join('", "')}"`;
+                            }
+                        }
+                    }
+                }
+
+                // Guardar resultado
+                processedData.push({ 
+                    codigo, 
+                    nombre, 
+                    zona,
+                    razon: razonZona
+                });
+
+                // Actualizar progreso
+                const percentage = Math.round(((i + 1) / totalItems) * 100);
+                progressFill.style.width = percentage + '%';
+                progressText.textContent = percentage + '%';
+
+                // Pequeña pausa para actualizar UI
+                await new Promise(resolve => setTimeout(resolve, 10));
+            }
+
+            // Ocultar barra de progreso
+            progressContainer.style.display = 'none';
+
+            // Mostrar resultados
+            displayProcessedData();
+        }
+        function displayProcessedData() {
+            const container = document.getElementById('dataContainer');
+            if (!processedData || processedData.length === 0) {
+                container.innerHTML = '<div class="no-data">No hay datos para mostrar</div>';
+                return;
+            }
+            let html = `<div class="list-title">Lista actual</div><table class="data-table"><thead><tr><th>Código</th><th>Nombre</th><th>Zona</th><th>Razón</th></tr></thead><tbody>`;
+            processedData.forEach(item => {
+                html += `<tr><td>${item.codigo || ''}</td><td>${item.nombre || ''}</td><td>${item.zona || 'sin zona'}</td><td>${item.razon || ''}</td></tr>`;
+            });
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+        }
+        function saveCurrentList() {
+            if (!processedData || processedData.length === 0) return;
+            
+            try {
+                let lists = [];
+                try {
+                    lists = JSON.parse(localStorage.getItem('zonifiedLists') || '[]');
+                } catch (e) {
+                    console.error('Error al cargar listas existentes:', e);
+                    lists = [];
+                }
+
+                const fecha = new Date();
+                const nombreLista = originalFile ? originalFile.name.replace(/\.[^/.]+$/, '') : 'Lista_' + fecha.getTime();
+                
+                // Crear nueva lista
+                const nuevaLista = {
+                    name: nombreLista + ' - ' + fecha.toLocaleString(),
+                    data: JSON.parse(JSON.stringify(processedData))
+                };
+
+                // Agregar al inicio del array
+                lists.unshift(nuevaLista);
+
+                // Guardar en localStorage
+                try {
+                    localStorage.setItem('zonifiedLists', JSON.stringify(lists));
+                } catch (e) {
+                    console.error('Error al guardar en localStorage:', e);
+                    alert('Error al guardar la lista. El almacenamiento podría estar lleno.');
+                    
+                    // Intentar guardar menos datos
+                    while (lists.length > 0) {
+                        try {
+                            localStorage.setItem('zonifiedLists', JSON.stringify(lists));
+                            break;
+                        } catch (e) {
+                            lists.pop(); // Eliminar la última lista
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error('Error general al guardar lista:', e);
+            }
+        }
+
+        function displaySavedLists() {
+            const container = document.getElementById('savedListsContainer');
+            let lists = [];
+            
+            try {
+                lists = JSON.parse(localStorage.getItem('zonifiedLists') || '[]');
+            } catch (e) {
+                console.error('Error al cargar listas:', e);
+                container.innerHTML = '<div class="no-data">Error al cargar listas guardadas</div>';
+                return;
+            }
+
+            savedLists = lists;
+            
+            if (!lists || lists.length === 0) {
+                container.innerHTML = '<div class="no-data">No hay listas zonificadas guardadas</div>';
+                return;
+            }
+
+            let html = '<div class="list-title">Listas Zonificadas Guardadas</div>';
+            
+            lists.forEach((list, idx) => {
+                const itemCount = list.data ? list.data.length : 0;
+                
+                html += `<div class="saved-list-card">
+                    <div class="saved-list-header" onclick="toggleListTable(${idx})">
+                        <span class="saved-list-icon">&#128194;</span>
+                        ${list.name}
+                        <span class="saved-list-count">(${itemCount} items)</span>
+                        <button class="delete-list-btn" onclick="event.stopPropagation(); deleteSingleList(${idx})">&#128465;</button>
+                    </div>
+                    <div class="saved-list-table" id="list-table-${idx}">
+                        <table class="data-table">
+                            <thead><tr><th>Código</th><th>Nombre</th><th>Zona</th><th>Razón</th></tr></thead>
+                            <tbody>`;
+                
+                if (list.data) {
+                    list.data.forEach(item => {
+                        html += `<tr>
+                            <td>${item.codigo || ''}</td>
+                            <td>${item.nombre || ''}</td>
+                            <td>${item.zona || 'sin zona'}</td>
+                            <td>${item.razon || ''}</td>
+                        </tr>`;
+                    });
+                }
+                
+                html += `</tbody></table></div></div>`;
+            });
+            
+            container.innerHTML = html;
+        }
+        function toggleListTable(idx) {
+            const tableDiv = document.getElementById('list-table-' + idx);
+            if (tableDiv) {
+                tableDiv.style.display = tableDiv.style.display === 'block' ? 'none' : 'block';
+            }
+        }
+        function deleteSingleList(idx) {
+            let lists = JSON.parse(localStorage.getItem('zonifiedLists') || '[]');
+            lists.splice(idx, 1);
+            localStorage.setItem('zonifiedLists', JSON.stringify(lists));
+            displaySavedLists();
+        }
+        // Mostrar listas guardadas al cargar la página
+        window.onload = function() {
+            displaySavedLists();
+        };
+        
+        // --- QR SECTION LOGIC ---
+        const qrSection = document.getElementById('qrSection');
+        const videoQR = document.getElementById('videoQR');
+        const canvasQR = document.getElementById('canvasQR');
+        const ctxQR = canvasQR.getContext('2d');
+        const resultadoQR = document.getElementById('resultadoQR');
+        const zonaQR = document.getElementById('zonaQR');
+        const mensajeErrorQR = document.getElementById('mensajeErrorQR');
+        const btnIniciarQR = document.getElementById('iniciarCamaraQR');
+        const btnDetenerQR = document.getElementById('detenerCamaraQR');
+        const btnCambiarQR = document.getElementById('cambiarCamaraQR');
+        let streamQR = null;
+        let procesandoQR = false;
+        let camaraActualQR = 'environment';
+        let ultimoQRDetectado = '';
+        function cerrarQRSection() {
+            qrSection.style.display = 'none';
+            document.querySelector('.main-container').style.display = '';
+            detenerCamaraQR();
+            resultadoQR.textContent = 'Esperando código QR...';
+            zonaQR.style.display = 'none';
+        }
+        function mostrarErrorQR(mensaje) {
+            mensajeErrorQR.textContent = mensaje;
+            mensajeErrorQR.style.display = 'block';
+            setTimeout(() => { mensajeErrorQR.style.display = 'none'; }, 5000);
+        }
+        async function iniciarCamaraQR() {
+            try {
+                const constraints = {
+                    video: {
+                        facingMode: camaraActualQR,
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                };
+                streamQR = await navigator.mediaDevices.getUserMedia(constraints);
+                videoQR.srcObject = streamQR;
+                btnIniciarQR.disabled = true;
+                btnDetenerQR.disabled = false;
+                btnCambiarQR.disabled = false;
+                videoQR.onloadedmetadata = () => {
+                    canvasQR.width = videoQR.videoWidth;
+                    canvasQR.height = videoQR.videoHeight;
+                    detectarQRLoop();
+                };
+                mensajeErrorQR.style.display = 'none';
+            } catch (error) {
+                mostrarErrorQR('No se pudo acceder a la cámara: ' + error.message);
+            }
+        }
+        function detenerCamaraQR() {
+            if (streamQR) {
+                streamQR.getTracks().forEach(track => track.stop());
+                videoQR.srcObject = null;
+                ctxQR.clearRect(0, 0, canvasQR.width, canvasQR.height);
+                btnIniciarQR.disabled = false;
+                btnDetenerQR.disabled = true;
+                btnCambiarQR.disabled = true;
+                ultimoQRDetectado = '';
+            }
+        }
+        async function cambiarCamaraQR() {
+            camaraActualQR = camaraActualQR === 'environment' ? 'user' : 'environment';
+            detenerCamaraQR();
+            await iniciarCamaraQR();
+        }
+        function detectarQRLoop() {
+            if (!streamQR || procesandoQR) {
+                requestAnimationFrame(detectarQRLoop);
+                return;
+            }
+            procesandoQR = true;
+            try {
+                ctxQR.drawImage(videoQR, 0, 0, canvasQR.width, canvasQR.height);
+                const imageData = ctxQR.getImageData(0, 0, canvasQR.width, canvasQR.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height, {inversionAttempts: 'dontInvert'});
+                if (code) {
+                    if (code.data !== ultimoQRDetectado) {
+                        ultimoQRDetectado = code.data;
+                        resultadoQR.textContent = code.data;
+                        // Extraer código antes del primer guion
+                        const codigoDetectado = code.data.split('-')[0].trim();
+                        // Buscar en todas las listas zonificadas
+                        let zonaEncontrada = '';
+                        let encontrado = false;
+                        let listas = JSON.parse(localStorage.getItem('zonifiedLists') || '[]');
+                        for(const lista of listas) {
+                            const item = lista.data.find(row => String(row.codigo) === codigoDetectado);
+                            if(item) {
+                                zonaEncontrada = item.zona || '';
+                                encontrado = true;
+                                break;
+                            }
+                        }
+                        zonaQR.style.display = 'block';
+                        zonaQR.textContent = encontrado ? `Zona: ${zonaEncontrada}` : 'Código no encontrado en listas zonificadas';
+                    }
+                }
+                procesandoQR = false;
+                requestAnimationFrame(detectarQRLoop);
+            } catch (error) {
+                procesandoQR = false;
+                requestAnimationFrame(detectarQRLoop);
+            }
+        }
+        btnIniciarQR.addEventListener('click', iniciarCamaraQR);
+        btnDetenerQR.addEventListener('click', detenerCamaraQR);
+        btnCambiarQR.addEventListener('click', cambiarCamaraQR);
+        // --- FIN QR SECTION LOGIC ---
+    </script>
+</body>
+</html>
